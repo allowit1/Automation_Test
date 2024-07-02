@@ -1,0 +1,12 @@
+task-force-miscellanea:
+  ami-iit/everyone:
+    type: "group"
+    permissions: "write"
+
+  hsp-iit/everyone:
+    type: "group"
+    permissions: "write"
+
+  edpr-iit/everyone:
+    type: "group"
+    permissions: "write"

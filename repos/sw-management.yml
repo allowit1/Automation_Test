@@ -1,0 +1,21 @@
+sw-management:
+  ami-iit/sw-dev:
+    type: "group"
+    permissions: "read"
+
+  hsp-iit/sw-dev:
+    type: "group"
+    permissions: "read"
+
+  edpr-iit/sw-dev:
+    type: "group"
+    permissions: "read"
+
+  PasMarra:
+    type: "user"
+    permissions: "read"
+  
+  gabrielecaddeo:
+    type: "user"
+    permissions: "read" 
+    
