@@ -1,0 +1,9 @@
+lab_xyz/group01:
+  - "user01"
+  - "user02"
+  - "user03"
+
+lab_xyz/group02:
+  - "user04"
+  - "user05"
+  - "user06"
