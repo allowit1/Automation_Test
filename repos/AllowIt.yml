@@ -1,9 +1,9 @@
 AllowIt:
-  example_group:
+  example_group1:
     type: "group"
     permissions: "read"
 
-  example_group:
+  example_group1:
     type: "group"
     permissions: "triage"
 
