@@ -1,8 +1,0 @@
-ergocub2-design-lowerbody:
-  ami-iit/ergocub:
-    type: "group"
-    permissions: "write"
-
-  hsp-iit/ergocub:
-    type: "group"
-    permissions: "read"
