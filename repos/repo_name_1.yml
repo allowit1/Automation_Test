@@ -1,0 +1,12 @@
+repo_name_1:
+  lab_xyz/group01:
+    type: "group"
+    permissions: "read"
+
+  lab_xyz/group02:
+    type: "group"
+    permissions: "triage"
+
+  user06:
+    type: "user"
+    permissions: "write"
