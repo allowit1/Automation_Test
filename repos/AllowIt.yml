@@ -1,12 +1,12 @@
 AllowIt:
-  lab_xyz/group01:
+  example_group01:
     type: "group"
     permissions: "read"
 
-  lab_xyz/group02:
+  example_group01:
     type: "group"
     permissions: "triage"
 
-  user06:
+  benayat1:
     type: "user"
     permissions: "write"
