@@ -1,4 +1,4 @@
-AllowIt:
+Example_Repo:
   example_group1:
     type: "group"
     permissions: "read"
