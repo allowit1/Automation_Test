@@ -7,6 +7,6 @@ Example_Repo:
     type: "group"
     permissions: "triage"
 
-  benayat1:
-    type: "user"
+  example_group1:
+    type: "group"
     permissions: "write"
