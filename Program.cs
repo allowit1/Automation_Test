@@ -218,11 +218,14 @@ class Program
     {
         string baseDirectory = @"C:\Users\User\Documents\Automation_Test\AutomationTest";
 
-        AddPartner(baseDirectory, "example_group1", "benayat1", "write");
-        RemovePartner(baseDirectory, "example_group1", "maor-noy", "write");
+        // AddPartner(baseDirectory, "example_group1", "benayat1", "write");
+        // RemovePartner(baseDirectory, "example_group1", "maor-noy", "write");
         // AddPartner(baseDirectory, "example_group1", "partner3", "triage");
         // AddPartner(baseDirectory, "example_group1", "partner2", "read");
         // RemovePartner(baseDirectory, "example_group1", "partner3", "triage");
+
+        AddPartner(baseDirectory, "example_group1", "maornoy1310@gmail.com", "write");
+        AddPartner(baseDirectory, "example_group1", "yeretyn@gmail.com", "write");
 
         PushToGitHub(baseDirectory, "Your commit message here");
     }
