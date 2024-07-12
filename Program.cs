@@ -219,7 +219,7 @@ class Program
         string baseDirectory = @"C:\Users\User\Documents\Automation_Test\AutomationTest";
 
         // AddPartner(baseDirectory, "example_group1", "partner1", "read");
-        AddPartner(baseDirectory, "example_group1", "maor-noy", "write");
+        RemovePartner(baseDirectory, "example_group1", "benayat1", "write");
         // AddPartner(baseDirectory, "example_group1", "partner3", "triage");
         // AddPartner(baseDirectory, "example_group1", "partner2", "read");
         // RemovePartner(baseDirectory, "example_group1", "partner3", "triage");
