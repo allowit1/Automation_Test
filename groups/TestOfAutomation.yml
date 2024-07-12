@@ -1,2 +1,5 @@
 example_group1_read:
 - benayat1
+- partner1
+example_group1_write:
+- maor-noy

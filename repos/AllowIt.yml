@@ -1,4 +1,0 @@
-AllowIt:
-  example_group1_read:
-    type: "group"
-    permissions: "read"

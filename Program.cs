@@ -1,126 +1,229 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 class Program
 {
-    static void Main(string[] args)
+    static void AddPartner(string baseDirectory, string group, string partner, string accessType)
     {
-        // Example usage:
-        string filePath = @"C:\Users\User\Documents\Automation_Test\AutomationTest\groups\TestOfAutomation.yml";
+        string groupFilePath = Path.Combine(baseDirectory, "groups", "TestOfAutomation.yml");
+        string repoFilePath = Path.Combine(baseDirectory, "repos", "Example_Repo.yml");
+        
+        var groupData = ReadYaml(groupFilePath);
+        var repoData = ReadRepoYaml(repoFilePath);
+        
+        string fullGroupName = $"{group}_{accessType}";
 
-        // Create directory if it doesn't exist
-        string directoryPath = Path.GetDirectoryName(filePath);
-        if (!Directory.Exists(directoryPath))
-        {
-            Directory.CreateDirectory(directoryPath);
-        }
+        // Update group file
+        UpdateGroupFile(groupData, fullGroupName, partner);
 
-        // Check if file exists, if not create an empty YAML file
-        if (!File.Exists(filePath))
-        {
-            File.WriteAllText(filePath, "example_group1: []");
-        }
+        // Remove from other access types in group file
+        RemoveFromOtherAccessTypes(groupData, group, partner, accessType);
 
-        // Add a partner
-        AddPartner(filePath, "example_group1", "new_partner");
+        // Update repo file
+        UpdateRepoFile(repoData, group, accessType);
 
-         // Add a partner
-        AddPartner(filePath, "example_group1", "new_partner2");
-
-        // Remove a partner
-        RemovePartner(filePath, "example_group1", "new_partner");
+        WriteYaml(groupFilePath, groupData);
+        WriteRepoYaml(repoFilePath, repoData);
+        Console.WriteLine($"Partner {partner} added to {fullGroupName}");
     }
 
-    static Dictionary<string, object> ReadYaml(string filePath)
+    static void UpdateGroupFile(Dictionary<string, List<string>> groupData, string fullGroupName, string partner)
     {
-        try
+        if (!groupData.ContainsKey(fullGroupName))
         {
-            var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .Build();
+            groupData[fullGroupName] = new List<string>();
+        }
+        if (!groupData[fullGroupName].Contains(partner))
+        {
+            groupData[fullGroupName].Add(partner);
+        }
+    }
 
-            using (var reader = new StreamReader(filePath))
+    static void RemoveFromOtherAccessTypes(Dictionary<string, List<string>> groupData, string group, string partner, string currentAccessType)
+    {
+        string[] allAccessTypes = { "read", "triage", "write" };
+        foreach (var accessType in allAccessTypes)
+        {
+            if (accessType != currentAccessType)
             {
-                var yamlObject = deserializer.Deserialize<Dictionary<string, object>>(reader);
-                return yamlObject;
+                string groupName = $"{group}_{accessType}";
+                if (groupData.ContainsKey(groupName))
+                {
+                    groupData[groupName].Remove(partner);
+                    if (groupData[groupName].Count == 0)
+                    {
+                        groupData.Remove(groupName);
+                    }
+                }
             }
         }
-        catch (FileNotFoundException)
-        {
-            Console.WriteLine($"File not found: {filePath}");
-            Environment.Exit(1);
-        }
-        catch (YamlDotNet.Core.YamlException e)
-        {
-            Console.WriteLine($"YAML syntax error in file {filePath}: {e.Message}");
-            Environment.Exit(1);
-        }
-        return null; // This line will never be reached because Environment.Exit will terminate the application.
     }
 
-    static void WriteYaml(string filePath, Dictionary<string, object> data)
+    static void UpdateRepoFile(Dictionary<string, Dictionary<string, object>> repoData, string group, string accessType)
     {
-        try
+        string fullGroupName = $"{group}_{accessType}";
+        if (!repoData.ContainsKey("Example_Repo"))
         {
-            var serializer = new SerializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .Build();
+            repoData["Example_Repo"] = new Dictionary<string, object>();
+        }
+        
+        var repoGroup = repoData["Example_Repo"];
+        repoGroup[fullGroupName] = new Dictionary<string, object>
+        {
+            { "type", "group" },
+            { "permissions", accessType }
+        };
+    }
 
-            using (var writer = new StreamWriter(filePath))
+    static void RemovePartner(string baseDirectory, string group, string partner, string accessType)
+    {
+        string groupFilePath = Path.Combine(baseDirectory, "groups", "TestOfAutomation.yml");
+        string repoFilePath = Path.Combine(baseDirectory, "repos", "Example_Repo.yml");
+        
+        var groupData = ReadYaml(groupFilePath);
+        var repoData = ReadRepoYaml(repoFilePath);
+        
+        string fullGroupName = $"{group}_{accessType}";
+
+        if (groupData.ContainsKey(fullGroupName))
+        {
+            if (groupData[fullGroupName].Remove(partner))
             {
-                serializer.Serialize(writer, data);
+                if (groupData[fullGroupName].Count == 0)
+                {
+                    groupData.Remove(fullGroupName);
+                    // Also remove from repo file if group is empty
+                    if (repoData.ContainsKey("Example_Repo"))
+                    {
+                        ((Dictionary<string, object>)repoData["Example_Repo"]).Remove(fullGroupName);
+                    }
+                }
+                WriteYaml(groupFilePath, groupData);
+                WriteRepoYaml(repoFilePath, repoData);
+                Console.WriteLine($"Partner {partner} removed from {fullGroupName}");
             }
-        }
-        catch (UnauthorizedAccessException)
-        {
-            Console.WriteLine($"Permission denied: {filePath}");
-            Environment.Exit(1);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"An error occurred while writing to the file: {e.Message}");
-            Environment.Exit(1);
-        }
-    }
-
-    static void AddPartner(string filePath, string group, string partner)
-    {
-        var data = ReadYaml(filePath);
-
-        if (data.ContainsKey(group))
-        {
-            var partners = (List<object>)data[group];
-            if (!partners.Contains(partner))
+            else
             {
-                partners.Add(partner);
+                Console.WriteLine($"Partner {partner} not found in {fullGroupName}");
             }
         }
         else
         {
-            data[group] = new List<object> { partner };
+            Console.WriteLine($"Group {fullGroupName} not found");
         }
-
-        WriteYaml(filePath, data);
-        Console.WriteLine($"Partner {partner} added to {group}");
     }
 
-    static void RemovePartner(string filePath, string group, string partner)
+    static Dictionary<string, List<string>> ReadYaml(string filePath)
     {
-        var data = ReadYaml(filePath);
-
-        if (data.ContainsKey(group))
+        if (!File.Exists(filePath))
         {
-            var partners = (List<object>)data[group];
-            if (partners.Contains(partner))
-            {
-                partners.Remove(partner);
-            }
+            return new Dictionary<string, List<string>>();
         }
 
-        WriteYaml(filePath, data);
-        Console.WriteLine($"Partner {partner} removed from {group}");
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+
+        using (var reader = new StreamReader(filePath))
+        {
+            return deserializer.Deserialize<Dictionary<string, List<string>>>(reader);
+        }
+    }
+
+    static Dictionary<string, Dictionary<string, object>> ReadRepoYaml(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            return new Dictionary<string, Dictionary<string, object>>();
+        }
+
+        var deserializer = new DeserializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+
+        using (var reader = new StreamReader(filePath))
+        {
+            return deserializer.Deserialize<Dictionary<string, Dictionary<string, object>>>(reader);
+        }
+    }
+
+    static void WriteYaml(string filePath, Dictionary<string, List<string>> data)
+    {
+        var serializer = new SerializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+
+        var yaml = serializer.Serialize(data);
+        File.WriteAllText(filePath, yaml.Trim());
+    }
+
+    static void WriteRepoYaml(string filePath, Dictionary<string, Dictionary<string, object>> data)
+    {
+        var serializer = new SerializerBuilder()
+            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .Build();
+
+        var yaml = serializer.Serialize(data);
+        File.WriteAllText(filePath, yaml.Trim());
+    }
+
+    static void RunGitCommand(string baseDirectory, string arguments)
+    {
+        var processStartInfo = new ProcessStartInfo
+        {
+            FileName = "git",
+            Arguments = arguments,
+            WorkingDirectory = baseDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using (var process = new Process { StartInfo = processStartInfo })
+        {
+            process.Start();
+            string output = process.StandardOutput.ReadToEnd();
+            string error = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                throw new Exception($"Git command failed with error: {error}");
+            }
+        }
+    }
+
+    static void PushToGitHub(string baseDirectory, string commitMessage)
+    {
+        try
+        {
+            RunGitCommand(baseDirectory, "add .");
+            RunGitCommand(baseDirectory, $"commit -m \"{commitMessage}\"");
+            RunGitCommand(baseDirectory, "push");
+            Console.WriteLine("Changes pushed to GitHub successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred while pushing to GitHub: {ex.Message}");
+        }
+    }
+
+    static void Main(string[] args)
+    {
+        string baseDirectory = @"C:\Users\User\Documents\Automation_Test\AutomationTest";
+
+        // AddPartner(baseDirectory, "example_group1", "partner1", "read");
+        AddPartner(baseDirectory, "example_group1", "maor-noy", "write");
+        // AddPartner(baseDirectory, "example_group1", "partner3", "triage");
+        // AddPartner(baseDirectory, "example_group1", "partner2", "read");
+        // RemovePartner(baseDirectory, "example_group1", "partner3", "triage");
+
+        PushToGitHub(baseDirectory, "Your commit message here");
     }
 }
