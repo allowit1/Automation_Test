@@ -216,9 +216,32 @@ class Program
 
     static void Main(string[] args)
     {
+        string addOrRemove = args[0];
+        string group = args[1];
+        string partner = args[2];
+        string accessType = args[3];
+        string commitMessage = args[4];
+
         string baseDirectory = @"C:\Users\User\Documents\Automation_Test\AutomationTest";
 
-        // AddPartner(baseDirectory, "example_group1", "benayat1", "write");
+        if(addOrRemove == "Add")
+        {
+            AddPartner(baseDirectory, group, partner, accessType);
+        }
+        else if(addOrRemove == "Remove")
+        {
+            RemovePartner(baseDirectory, group, partner, accessType);
+        }
+        else
+        {
+            Console.WriteLine("Invalid command. Please use 'Add' or 'Remove'.");
+        }
+
+        PushToGitHub(baseDirectory, commitMessage);
+
+
+
+         // AddPartner(baseDirectory, "example_group1", "benayat1", "write");
         // RemovePartner(baseDirectory, "example_group1", "maor-noy", "write");
         // AddPartner(baseDirectory, "example_group1", "partner3", "triage");
         // AddPartner(baseDirectory, "example_group1", "partner2", "read");
@@ -227,8 +250,5 @@ class Program
         //AddPartner(baseDirectory, "example_group1", "maornoy1310@gmail.com", "write");
         //AddPartner(baseDirectory, "example_group1", "yeretyn@gmail.com", "write");
         //AddPartner(baseDirectory, "example_group1", "manoy@g.jct.ac.il", "write");
-        AddPartner(baseDirectory, "example_group1", "yovel2", "write");
-
-        PushToGitHub(baseDirectory, "Your commit message here");
     }
 }
